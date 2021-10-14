@@ -83,10 +83,11 @@ namespace xUnitNetCore.Test
         public void Add_SimpleValues_ReturnTotalValue(int a, int b, int exceptedTotal)
         {
             myMoq.Setup(x => x.add(a, b)).Returns(exceptedTotal); //Taklit etme işlemi (DI -> Dependency Injection)
-
             var calculator = _calculator;
             var total = calculator.add(a, b);
             Assert.Equal(total, exceptedTotal);
+            myMoq.Verify(x => x.add(a, b), Times.Once); //Method bir kere çalışsın demek
+
         }
 
         [Theory]
@@ -100,6 +101,30 @@ namespace xUnitNetCore.Test
             Assert.Equal(total, exceptedTotal);
         }
 
+        [Theory]
+        [InlineData(5, 2, 10)]
+        [InlineData(50, 6, 300)]
+        public void Multiple_SimpleValues_ReturnMultiplesValues(int a, int b, int exceptedTotal)
+        {
+
+            //It.IsAny<int>() bu komut int tipinde herhangi bir değer alabileceğini söylüyor.
+            int actualMultip = 0;
+            myMoq.Setup(x => x.multiple(It.IsAny<int>(), It.IsAny<int>())).Callback<int, int>((x, y) => actualMultip = x * y); //Taklit etme işlemi (DI -> Dependency Injection)
+
+            _calculator.multiple(a, b);
+            Assert.Equal(exceptedTotal, actualMultip);
+            _calculator.multiple(5,20);
+            Assert.Equal(100, actualMultip);
+        }
+
+        [Theory]
+        [InlineData(0, 5)]
+        public void Multiple_ZeroValues_ReturnException(int a, int b)
+        {
+            myMoq.Setup(x => x.multiple(a, b)).Throws(new Exception("a=0 olamaz")); //Taklit etme işlemi (DI -> Dependency Injection)
+            Exception ex = Assert.Throws<Exception>(()=> _calculator.multiple(a,b));
+            Assert.Equal("a=0 olamaz", ex.Message);
+        }
 
     }
 }
