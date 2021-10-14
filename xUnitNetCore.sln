@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31727.386
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitNetCore.App", "xUnitNetCore.App\xUnitNetCore.App.csproj", "{7830574A-5D63-43A1-BD37-23EAEA779D76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xUnitNetCore.App", "xUnitNetCore.App\xUnitNetCore.App.csproj", "{7830574A-5D63-43A1-BD37-23EAEA779D76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitNetCore.Test", "xUnitNetCore.Test\xUnitNetCore.Test.csproj", "{F7AD361E-33A8-485F-B489-8E554332F917}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xUnitNetCore.Test", "xUnitNetCore.Test\xUnitNetCore.Test.csproj", "{F7AD361E-33A8-485F-B489-8E554332F917}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

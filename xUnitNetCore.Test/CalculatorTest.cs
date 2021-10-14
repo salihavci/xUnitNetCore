@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Moq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,10 +12,13 @@ namespace xUnitNetCore.Test
     public class CalculatorTest
     {
         public Calculator _calculator { get; set; }
+        public Mock<ICalculatorService> myMoq { get; set; }
 
         public CalculatorTest()
         {
-            _calculator = new Calculator();
+            myMoq = new Mock<ICalculatorService>();
+            _calculator = new Calculator(myMoq.Object);
+            //_calculator = null;
         }
 
         [Fact] //Test etmek için yazılması zorunlu olan attribute (Parametre almazsa fonksiyon bu kullanılır)
@@ -62,13 +66,40 @@ namespace xUnitNetCore.Test
         //[InlineDate(val1,val2,val3....)] == Parametre girişi için oluşturulan attribute
 
         [Theory]
-        [InlineData(2,5,7)]
-        [InlineData(10,2,12)]
+        [InlineData(2, 5, 7)]
+        [InlineData(10, 2, 12)]
         public void Add(int a, int b, int expectedTotal)
         {
+            myMoq.Setup(x => x.add(a, b)).Returns(expectedTotal); //DI'daki metoda girmeden direk taklit ederek test sonucunu döndürüyorum.
             var calculator = _calculator;
             var actualData = calculator.add(a, b);
             Assert.Equal(actualData, expectedTotal);
         }
+
+        [Theory]
+        [InlineData(7, 5, 12)]
+        [InlineData(5, 2, 7)]
+        //Doğru isimlendirme şekli
+        public void Add_SimpleValues_ReturnTotalValue(int a, int b, int exceptedTotal)
+        {
+            myMoq.Setup(x => x.add(a, b)).Returns(exceptedTotal); //Taklit etme işlemi (DI -> Dependency Injection)
+
+            var calculator = _calculator;
+            var total = calculator.add(a, b);
+            Assert.Equal(total, exceptedTotal);
+        }
+
+        [Theory]
+        [InlineData(0, 5, 0)]
+        [InlineData(5, 0, 0)]
+        public void Add_ZeroValues_ReturnZeroValue(int a, int b, int exceptedTotal)
+        {
+            myMoq.Setup(x => x.add(a, b)).Returns(exceptedTotal);
+            var calculator = _calculator;
+            var total = calculator.add(a, b);
+            Assert.Equal(total, exceptedTotal);
+        }
+
+
     }
 }
