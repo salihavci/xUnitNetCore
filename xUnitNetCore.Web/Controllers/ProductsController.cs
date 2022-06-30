@@ -6,24 +6,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using xUnitNetCore.Web.Models;
-using xUnitNetCore.Web.Repository;
 
 namespace xUnitNetCore.Web.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly IRepository<Product> _repository;
+        private readonly AppDbContext _context;
 
-        public ProductsController(IRepository<Product> repository)
+        public ProductsController(AppDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
-
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _repository.GetAll());
+            var appDbContext = _context.Products.Include(p => p.Category);
+            return View(await appDbContext.ToListAsync());
         }
 
         // GET: Products/Details/5
@@ -31,10 +30,12 @@ namespace xUnitNetCore.Web.Controllers
         {
             if (id == null)
             {
-                return RedirectToAction("Index");
+                return NotFound();
             }
 
-            var product = await _repository.GetById((int)id);
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
                 return NotFound();
@@ -46,6 +47,7 @@ namespace xUnitNetCore.Web.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
+            ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");
             return View();
         }
 
@@ -54,13 +56,15 @@ namespace xUnitNetCore.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,Color")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,Color,CategoryId")] Product product)
         {
             if (ModelState.IsValid)
             {
-                await _repository.Create(product);               
+                _context.Add(product);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name", product.CategoryId);
             return View(product);
         }
 
@@ -69,14 +73,15 @@ namespace xUnitNetCore.Web.Controllers
         {
             if (id == null)
             {
-                return RedirectToAction("Index");
+                return NotFound();
             }
 
-            var product = await _repository.GetById((int)id);
+            var product = await _context.Products.FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
+            ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name", product.CategoryId);
             return View(product);
         }
 
@@ -85,7 +90,7 @@ namespace xUnitNetCore.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Stock,Color")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Stock,Color,CategoryId")] Product product)
         {
             if (id != product.Id)
             {
@@ -96,7 +101,8 @@ namespace xUnitNetCore.Web.Controllers
             {
                 try
                 {
-                    await _repository.Update(product);
+                    _context.Update(product);
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -111,6 +117,7 @@ namespace xUnitNetCore.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name", product.CategoryId);
             return View(product);
         }
 
@@ -122,7 +129,9 @@ namespace xUnitNetCore.Web.Controllers
                 return NotFound();
             }
 
-            var product = await _repository.GetById((int)id);
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
                 return NotFound();
@@ -136,16 +145,15 @@ namespace xUnitNetCore.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _repository.GetById(id);
-            _repository.Delete(product);
+            var product = await _context.Products.FindAsync(id);
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ProductExists(int id)
         {
-            var product = _repository.GetById(id).Result;
-            if (product == null) return false;
-            else return true;
+            return _context.Products.Any(e => e.Id == id);
         }
     }
 }
