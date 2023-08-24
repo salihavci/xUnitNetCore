@@ -39,5 +39,5 @@ steps:
   displayName: "Dotnet Test Task"
   inputs:
     command: test
-    projects: '**/*Tests/*.csproj'
+    projects: 'xUnitNetCore.Test/*.csproj'
     arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
