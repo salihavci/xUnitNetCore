@@ -43,7 +43,7 @@ namespace xUnitNetCore.Test
         }
 
         [Theory]
-        [InlineData(1)]
+        [InlineData(2)]
         public async Task DeleteCategory_ExistCategoryId_DeleteAllProducts(int categoryId)
         {
             using (var context = new AppDbContext(_contextOptions))
