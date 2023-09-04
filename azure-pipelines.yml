@@ -21,6 +21,15 @@ steps:
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     replaceExistingArchive: true
+
+- task: SonarCloudPrepare@1
+  displayName: "Sonarcloud Prepare Task"
+  inputs:
+    SonarCloud: 'SonarCloud Connection'
+    organization: 'salihavci'
+    scannerMode: 'MSBuild'
+    projectKey: 'salihavci_xUnitNetCore'
+    projectName: 'xUnitNetCore'
 - task: DotNetCoreCLI@2
   displayName: "Dotnet Restore Task"
   inputs:
@@ -42,6 +51,15 @@ steps:
     projects: 'xUnitNetCore.Test/*.csproj'
     arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
+- task: SonarCloudAnalyze@1
+  displayName: "Sonarcloud Run Analyze Task"
+  inputs:
+    jdkversion: 'JAVA_HOME_17_X64'
+
+- task: SonarCloudPublish@1
+  displayName: "Sonarcloud Publish Task"
+  inputs:
+    pollingTimeoutSec: '300'
 - task: DotNetCoreCLI@2
   displayName: "Dotnet Publish Task"
   inputs:
